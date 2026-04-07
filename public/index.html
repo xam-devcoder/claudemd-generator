@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Génère ton CLAUDE.md — ACTE SCHOOL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: #252525;
+    --border2: #333333;
+    --text: #e8e8e8;
+    --text-muted: #666;
+    --text-dim: #444;
+    --accent: #00ff88;
+    --accent-dim: #00ff8822;
+    --accent-dark: #00cc6a;
+    --warn: #ff6b35;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ─── LAYOUT ─── */
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 32px 24px 0;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--accent);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 64px 0 48px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 5px 10px;
+    margin-bottom: 28px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hero-tag::before {
+    content: '▸';
+    font-size: 9px;
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(36px, 7vw, 58px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 520px;
+  }
+
+  .hero-sub strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 0 40px;
+  }
+
+  /* ─── PROGRESS ─── */
+  .progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .progress-steps {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .progress-step {
+    height: 3px;
+    flex: 1;
+    background: var(--border2);
+    border-radius: 2px;
+    transition: background 0.4s ease;
+  }
+
+  .progress-step.active {
+    background: var(--accent);
+  }
+
+  .progress-step.done {
+    background: var(--accent-dark);
+  }
+
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* ─── FORM STEPS ─── */
+  .step {
+    display: none;
+    animation: fadeIn 0.35s ease;
+  }
+
+  .step.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .step-question {
+    font-family: var(--sans);
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .step-hint {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* ─── INPUTS ─── */
+  input[type="text"],
+  input[type="email"],
+  textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    padding: 16px 18px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: none;
+    -webkit-appearance: none;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-dim);
+  }
+
+  textarea {
+    min-height: 100px;
+  }
+
+  /* ─── CHOICE BUTTONS ─── */
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-muted);
+    user-select: none;
+  }
+
+  .choice:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .choice.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .choice-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* Custom "Autre" field in choices */
+  .choice-custom {
+    margin-top: 4px;
+  }
+
+  .choice-custom input {
+    margin-top: 10px;
+    display: none;
+  }
+
+  .choice-custom.show-input input {
+    display: block;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 14px 28px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 28px;
+  }
+
+  .btn-primary:hover {
+    background: #33ffaa;
+  }
+
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 0;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-top: 8px;
+  }
+
+  .btn-secondary:hover {
+    color: var(--text);
+  }
+
+  .btn-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* ─── LOADER ─── */
+  #loader {
+    display: none;
+    padding: 48px 0;
+    text-align: center;
+  }
+
+  .loader-terminal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 28px 32px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+
+  .loader-line {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    opacity: 0;
+    animation: lineIn 0.3s ease forwards;
+  }
+
+  .loader-line .prompt {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  @keyframes lineIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 14px;
+    background: var(--accent);
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* ─── RESULT ─── */
+  #result {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .result-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .result-title span {
+    color: var(--accent);
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-copy, .btn-dl {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border2);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    color: var(--text-muted);
+  }
+
+  .btn-copy:hover, .btn-dl:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-copy.copied {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 28px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 480px;
+    overflow-y: auto;
+    margin-bottom: 2px;
+  }
+
+  /* Markdown coloring inside code block */
+  .code-block .md-h1 { color: var(--accent); font-weight: 600; }
+  .code-block .md-h2 { color: #79c0ff; font-weight: 500; }
+  .code-block .md-h3 { color: #d2a8ff; }
+  .code-block .md-bold { color: #ffa657; }
+  .code-block .md-comment { color: #484f58; }
+
+  .result-tip {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-left: 2px solid var(--border2);
+    line-height: 1.6;
+  }
+
+  .result-tip strong {
+    color: var(--text-muted);
+  }
+
+  /* ─── EMAIL CAPTURE ─── */
+  .email-capture {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 32px;
+  }
+
+  .email-capture-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .email-capture h3 {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .email-capture p {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .email-capture p strong {
+    color: var(--text);
+  }
+
+  .email-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .email-row input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .email-row .btn-primary {
+    margin-top: 0;
+    white-space: nowrap;
+  }
+
+  .email-success {
+    display: none;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 12px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    margin-top: 80px;
+    padding: 32px 24px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  footer p {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  footer a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+  }
+
+  /* ─── SCROLLBAR ─── */
+  .code-block::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .code-block::-webkit-scrollbar-track { background: transparent; }
+  .code-block::-webkit-scrollbar-thumb {
+    background: var(--border2);
+    border-radius: 3px;
+  }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 480px) {
+    h1 { font-size: 32px; }
+    .btn-row { flex-direction: column; align-items: flex-start; }
+    .email-row { flex-direction: column; }
+    .result-header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ACTE<span>SCHOOL</span> × Claude Code</div>
+</header>
+
+<main class="container">
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-tag">Outil gratuit</div>
+    <h1>Génère ton<br><em>CLAUDE.md</em><br>en 2 minutes.</h1>
+    <p class="hero-sub">
+      Le fichier qui fait de Claude Code un <strong>vrai assistant</strong> — pas juste un outil.<br>
+      Réponds à 4 questions. On s'occupe du reste.
+    </p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- FORM -->
+  <section id="form-section">
+
+    <!-- Progress -->
+    <div class="progress-bar">
+      <div class="progress-steps">
+        <div class="progress-step active" id="ps1"></div>
+        <div class="progress-step" id="ps2"></div>
+        <div class="progress-step" id="ps3"></div>
+        <div class="progress-step" id="ps4"></div>
+      </div>
+      <div class="progress-label" id="progress-label">Étape 1 sur 4</div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step active" id="step1">
+      <div class="step-number">01 / 04</div>
+      <div class="step-question">Comment tu t'appelles ?</div>
+      <div class="step-hint">Juste ton prénom — Claude va s'en servir pour personaliser tes instructions.</div>
+      <input type="text" id="f-name" placeholder="ex: Thomas" autocomplete="off" />
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goToStep(2)">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step" id="step2">
+      <div class="step-number">02 / 04</div>
+      <div class="step-question">C'est quoi ton activité ?</div>
+      <div class="step-hint">Ce que tu fais concrètement — pas besoin d'un titre officiel.</div>
+      <input type="text" id="f-job" placeholder="ex: Consultant marketing, Développeur freelance, E-commerçant..." autocomplete="off" />
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goToStep(3)">Continuer →</button>
+        <button class="btn-secondary" onclick="goToStep(1)">← Retour</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step" id="step3">
+      <div class="step-number">03 / 04</div>
+      <div class="step-question">Sur quoi tu travailles en ce moment ?</div>
+      <div class="step-hint">Décris ton projet principal — Claude va adapter ses suggestions à ton contexte exact.</div>
+      <textarea id="f-project" placeholder="ex: Je construis un site e-commerce pour vendre mes formations. Je gère aussi les réseaux sociaux d'une marque de vêtements."></textarea>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goToStep(4)">Continuer →</button>
+        <button class="btn-secondary" onclick="goToStep(2)">← Retour</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step" id="step4">
+      <div class="step-number">04 / 04</div>
+      <div class="step-question">Ton objectif avec Claude Code ?</div>
+      <div class="step-hint">Choisis ce qui te correspond le mieux.</div>
+      <div class="choices" id="choices">
+        <div class="choice" data-value="Coder plus vite et produire du code de meilleure qualité" onclick="selectChoice(this)">
+          <span class="choice-icon">⚡</span>
+          Coder plus vite
+        </div>
+        <div class="choice" data-value="Automatiser des tâches répétitives sans coder manuellement" onclick="selectChoice(this)">
+          <span class="choice-icon">🔁</span>
+          Automatiser des tâches répétitives
+        </div>
+        <div class="choice" data-value="Apprendre à coder et construire des projets sans être développeur" onclick="selectChoice(this)">
+          <span class="choice-icon">🚀</span>
+          Apprendre à coder sans être dev
+        </div>
+        <div class="choice choice-custom" id="choice-custom" data-value="" onclick="selectChoice(this)">
+          <span class="choice-icon">✏️</span>
+          Autre chose…
+          <input type="text" id="f-other" placeholder="Précise ton objectif..." onclick="event.stopPropagation()" oninput="updateCustomChoice(this)" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="generate()">Générer mon CLAUDE.md →</button>
+        <button class="btn-secondary" onclick="goToStep(3)">← Retour</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="loader-terminal" id="loader-terminal">
+      <!-- Lines injected by JS -->
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result">
+    <div class="result-header">
+      <div class="result-title">📄 <span>CLAUDE.md</span> — généré pour toi</div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copyResult()" id="btn-copy">⎘ Copier</button>
+        <button class="btn-dl" onclick="downloadResult()">↓ .md</button>
+      </div>
+    </div>
+    <div class="code-block" id="code-output"></div>
+    <div class="result-tip">
+      <strong>Comment l'utiliser :</strong> Colle ce fichier à la racine de ton projet. Claude Code le lit automatiquement à chaque session.
+    </div>
+
+    <!-- Email capture -->
+    <div class="email-capture">
+      <div class="email-capture-label">Aller plus loin</div>
+      <h3>Tu veux vraiment maîtriser Claude Code ?</h3>
+      <p>Reçois le <strong>module 1 de la formation gratuitement</strong> — setup, CLAUDE.md avancé, et tes premiers automatismes.</p>
+      <div class="email-row">
+        <input type="email" id="f-email" placeholder="ton@email.com" />
+        <button class="btn-primary" onclick="captureEmail()">Je veux le module gratuit →</button>
+      </div>
+      <div class="email-success" id="email-success">✓ C'est parti — vérifie ta boîte dans quelques minutes.</div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>© 2025 ACTE SCHOOL — Tous droits réservés.</p>
+  <p><a href="#">Formation complète →</a></p>
+</footer>
+
+<script>
+  // ─── STATE ───
+  let currentStep = 1;
+  let selectedGoal = '';
+  let generatedContent = '';
+
+  // ─── STEP NAVIGATION ───
+  function goToStep(n) {
+    // Validation
+    if (n > currentStep) {
+      if (currentStep === 1 && !document.getElementById('f-name').value.trim()) {
+        shake('f-name'); return;
+      }
+      if (currentStep === 2 && !document.getElementById('f-job').value.trim()) {
+        shake('f-job'); return;
+      }
+      if (currentStep === 3 && !document.getElementById('f-project').value.trim()) {
+        shake('f-project'); return;
+      }
+    }
+
+    document.getElementById('step' + currentStep).classList.remove('active');
+    currentStep = n;
+    document.getElementById('step' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress() {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('ps' + i);
+      el.classList.remove('active', 'done');
+      if (i < currentStep) el.classList.add('done');
+      else if (i === currentStep) el.classList.add('active');
+    }
+    document.getElementById('progress-label').textContent = `Étape ${currentStep} sur 4`;
+  }
+
+  function shake(id) {
+    const el = document.getElementById(id);
+    el.style.borderColor = '#ff6b35';
+    el.style.animation = 'shake 0.4s ease';
+    setTimeout(() => {
+      el.style.borderColor = '';
+      el.style.animation = '';
+    }, 500);
+  }
+
+  // Add shake keyframe
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = `
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+
+  // ─── CHOICE SELECTION ───
+  function selectChoice(el) {
+    document.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedGoal = el.dataset.value;
+
+    const custom = document.getElementById('choice-custom');
+    if (el === custom) {
+      custom.classList.add('show-input');
+      document.getElementById('f-other').focus();
+    } else {
+      custom.classList.remove('show-input');
+    }
+  }
+
+  function updateCustomChoice(input) {
+    selectedGoal = input.value;
+    document.getElementById('choice-custom').dataset.value = input.value;
+  }
+
+  // ─── LOADER ───
+  const loaderLines = [
+    '→ Lecture de ton profil...',
+    '→ Analyse de ton contexte...',
+    '→ Construction du CLAUDE.md...',
+    '→ Finalisation...',
+  ];
+
+  async function showLoader() {
+    document.getElementById('form-section').style.display = 'none';
+    const loader = document.getElementById('loader');
+    loader.style.display = 'block';
+    const terminal = document.getElementById('loader-terminal');
+    terminal.innerHTML = '';
+
+    for (let i = 0; i < loaderLines.length; i++) {
+      await sleep(600 + i * 400);
+      const line = document.createElement('div');
+      line.className = 'loader-line';
+      line.style.animationDelay = '0s';
+      line.innerHTML = `<span class="prompt">$</span><span>${loaderLines[i]}</span>`;
+      terminal.appendChild(line);
+    }
+
+    await sleep(400);
+    const cursorLine = document.createElement('div');
+    cursorLine.className = 'loader-line';
+    cursorLine.style.animationDelay = '0s';
+    cursorLine.innerHTML = `<span class="prompt">$</span><span class="cursor"></span>`;
+    terminal.appendChild(cursorLine);
+  }
+
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  // ─── GENERATE ───
+  async function generate() {
+    if (!selectedGoal) {
+      document.getElementById('choices').style.border = '1px solid #ff6b35';
+      setTimeout(() => document.getElementById('choices').style.border = '', 600);
+      return;
+    }
+
+    const name = document.getElementById('f-name').value.trim();
+    const job = document.getElementById('f-job').value.trim();
+    const project = document.getElementById('f-project').value.trim();
+    const goal = selectedGoal;
+
+    await showLoader();
+
+    const userPrompt = `Génère un CLAUDE.md personnalisé pour cette personne :
+- Prénom : ${name}
+- Activité / métier : ${job}
+- Projet actuel : ${project}
+- Objectif avec Claude Code : ${goal}`;
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `Tu génères un fichier CLAUDE.md personnalisé pour Claude Code.
+Format exact à respecter (en markdown) :
+
+# Mon assistant Claude
+## Qui je suis
+## Mon style de communication
+## Règles
+## Mes outils et fichiers (si renseignés)
+## Mes workflows récurrents (si renseignés)
+
+Règles de génération :
+- Tutoiement systématique dans les instructions
+- Concret, actionnable, zéro bullshit
+- Les sections "outils" et "workflows" n'apparaissent que si l'utilisateur les a renseignées
+- Pas d'inventions — si une info manque, ne pas halluciner
+- Format markdown propre, prêt à copier directement dans un projet
+- Commence directement par le contenu markdown, pas d'introduction`,
+          messages: [{ role: 'user', content: userPrompt }]
+        })
+      });
+
+      const data = await res.json();
+      const text = data.content?.[0]?.text || '';
+
+      document.getElementById('loader').style.display = 'none';
+      generatedContent = text;
+      renderResult(text);
+
+    } catch (err) {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('form-section').style.display = 'block';
+      alert('Erreur lors de la génération. Réessaie dans quelques secondes.');
+      console.error(err);
+    }
+  }
+
+  // ─── RENDER RESULT ───
+  function renderResult(md) {
+    const result = document.getElementById('result');
+    result.style.display = 'block';
+
+    const highlighted = md
+      .replace(/^(# .+)$/gm, '<span class="md-h1">$1</span>')
+      .replace(/^(## .+)$/gm, '<span class="md-h2">$1</span>')
+      .replace(/^(### .+)$/gm, '<span class="md-h3">$1</span>')
+      .replace(/\*\*(.+?)\*\*/g, '<span class="md-bold">**$1**</span>')
+      .replace(/^(- .+)$/gm, '<span style="color:#8b949e">$1</span>');
+
+    document.getElementById('code-output').innerHTML = highlighted;
+    result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ─── COPY ───
+  function copyResult() {
+    navigator.clipboard.writeText(generatedContent).then(() => {
+      const btn = document.getElementById('btn-copy');
+      btn.textContent = '✓ Copié';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '⎘ Copier';
+        btn.classList.remove('copied');
+      }, 2500);
+    });
+  }
+
+  // ─── DOWNLOAD ───
+  function downloadResult() {
+    const blob = new Blob([generatedContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CLAUDE.md';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ─── EMAIL CAPTURE ───
+  function captureEmail() {
+    const email = document.getElementById('f-email').value.trim();
+    if (!email || !email.includes('@')) {
+      shake('f-email'); return;
+    }
+    // TODO: brancher sur Brevo / n8n webhook ici
+    console.log('Email capturé :', email);
+    document.getElementById('email-success').style.display = 'block';
+    document.querySelector('.email-row').style.display = 'none';
+  }
+
+  // ─── ENTER KEY ───
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && currentStep < 4) {
+      if (document.activeElement.tagName !== 'TEXTAREA') {
+        goToStep(currentStep + 1);
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
