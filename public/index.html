@@ -907,25 +907,6 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `Tu génères un fichier CLAUDE.md personnalisé pour Claude Code.
-Format exact à respecter (en markdown) :
-
-# Mon assistant Claude
-## Qui je suis
-## Mon style de communication
-## Règles
-## Mes outils et fichiers (si renseignés)
-## Mes workflows récurrents (si renseignés)
-
-Règles de génération :
-- Tutoiement systématique dans les instructions
-- Concret, actionnable, zéro bullshit
-- Les sections "outils" et "workflows" n'apparaissent que si l'utilisateur les a renseignées
-- Pas d'inventions — si une info manque, ne pas halluciner
-- Format markdown propre, prêt à copier directement dans un projet
-- Commence directement par le contenu markdown, pas d'introduction`,
           messages: [{ role: 'user', content: userPrompt }]
         })
       });
