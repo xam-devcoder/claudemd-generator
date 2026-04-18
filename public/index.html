@@ -912,7 +912,13 @@
       });
 
       const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `Erreur API (${res.status})`);
+      }
+
       const text = data.content?.[0]?.text || '';
+      if (!text) throw new Error('Réponse vide de l\'IA');
 
       document.getElementById('loader').style.display = 'none';
       generatedContent = text;
@@ -921,7 +927,7 @@
     } catch (err) {
       document.getElementById('loader').style.display = 'none';
       document.getElementById('form-section').style.display = 'block';
-      alert('Erreur lors de la génération. Réessaie dans quelques secondes.');
+      alert('Erreur lors de la génération : ' + err.message + '\nRéessaie dans quelques secondes.');
       console.error(err);
     }
   }
